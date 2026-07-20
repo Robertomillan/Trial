@@ -29,6 +29,8 @@ Este repositório entrega exatamente esse pacote: o produto documentado em níve
 
 ## Como usar este pacote
 
+> **Quer usar o Career OS em um chat novo agora?** O [Guia de Ativação](docs/ATIVACAO.md) tem um prompt único e autocontido, pronto para colar em um Custom GPT, um Projeto ou qualquer chat.
+
 ### Caminho A — Career OS como GPT (hoje)
 1. Cole o [System Prompt Master](docs/04-System-Prompt-Master.md) na configuração de instruções do GPT.
 2. Anexe a [Base de Conhecimento](docs/06-Base-de-Conhecimento.md) e os [Prompts dos Módulos](docs/05-Prompts-Modulos/) como arquivos de conhecimento.
