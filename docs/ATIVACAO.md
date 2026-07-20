@@ -31,6 +31,8 @@ Este documento te dá **um prompt único e autocontido** que "liga" o Career OS 
 3. Anexe os arquivos de `docs/` ao projeto.
 4. Todo chat novo dentro do projeto já nasce como Career OS.
 
+> Passo a passo detalhado para o **Claude**: veja [`CLAUDE-PROJECT-SETUP.md`](CLAUDE-PROJECT-SETUP.md). Para o **ChatGPT (Custom GPT)**: veja [`CUSTOM-GPT-SETUP.md`](CUSTOM-GPT-SETUP.md).
+
 ### C. Colar em qualquer chat novo (mais rápido)
 1. Abra um chat novo.
 2. Cole o **Prompt de Ativação** como **primeira mensagem**.
