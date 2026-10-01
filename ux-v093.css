@@ -1,0 +1,79 @@
+/* Negocia.AI v0.9.3 - separacao visual de participantes e tom */
+
+/* Conversa: quatro papeis visuais distintos */
+.chat{gap:10px}
+.bubble{position:relative;padding-top:22px;border:1px solid transparent;box-shadow:0 3px 10px rgba(8,40,68,.04)}
+.bubble:before{position:absolute;top:6px;left:12px;font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;opacity:.78}
+
+/* Minha mensagem */
+.bubble.me{
+  align-self:flex-end;
+  background:#DFF7F2;
+  color:#12392F;
+  border-color:#9FDFD5;
+  border-bottom-right-radius:5px;
+}
+.bubble.me:before{content:"Você";color:#087A69}
+
+/* Observacao da ferramenta depois da minha mensagem */
+.bubble.tool-own{
+  align-self:flex-start;
+  background:#082F4F;
+  color:#FFFFFF;
+  border-color:#082F4F;
+  border-bottom-left-radius:5px;
+}
+.bubble.tool-own:before{content:"Negocia.AI";color:#7FE8D8}
+
+/* Fala da contraparte */
+.bubble.counterparty{
+  align-self:flex-start;
+  background:#FFF1DB;
+  color:#4B3214;
+  border-color:#F0CF9E;
+  border-bottom-left-radius:5px;
+}
+.bubble.counterparty:before{content:"Contraparte";color:#9A621A}
+
+/* Leitura curta da ferramenta apos a contraparte */
+.bubble.tool-counterparty{
+  align-self:flex-start;
+  background:#155B86;
+  color:#FFFFFF;
+  border-color:#155B86;
+  border-bottom-left-radius:5px;
+}
+.bubble.tool-counterparty:before{content:"Negocia.AI · leitura";color:#BEE6FF}
+
+/* Mensagem inicial do copiloto */
+.bubble.ai{
+  align-self:flex-start;
+  background:#0A3556;
+  color:#FFFFFF;
+  border-bottom-left-radius:5px;
+}
+.bubble.ai:before{content:"Negocia.AI";color:#7FE8D8}
+
+/* Fallback para conversas antigas gravadas antes da v0.9.3 */
+.bubble.user{
+  align-self:flex-end;
+  background:#EEF3F6;
+  color:#173046;
+  border-color:#DCE6ED;
+  border-bottom-right-radius:5px;
+}
+.bubble.user:before{content:"Mensagem";color:#667B8B}
+
+/* Tom selecionado precisa ser perceptivel antes mesmo de ler o texto */
+.tone{transition:.16s ease;border-width:1px}
+.tone:nth-child(1).active{background:#0A937F;color:#fff;border-color:#0A937F;box-shadow:0 4px 12px rgba(10,147,127,.16)}
+.tone:nth-child(2).active{background:#0A3556;color:#fff;border-color:#0A3556;box-shadow:0 4px 12px rgba(10,53,86,.16)}
+.tone:nth-child(3).active{background:#8D3443;color:#fff;border-color:#8D3443;box-shadow:0 4px 12px rgba(141,52,67,.16)}
+
+/* Resposta recomendada fica mais evidente */
+.analysis-panel .quote{font-size:13px;line-height:1.55}
+.analysis-panel .card:has(.quote){border-color:#CFE3EA}
+
+@media(max-width:520px){
+  .bubble{max-width:92%}
+}
