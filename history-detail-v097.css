@@ -1,0 +1,28 @@
+/* Negocia.AI v0.9.7 - detalhe e linha do tempo das negociações */
+.neg-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.neg-detail-head h2{margin:6px 0 2px}
+.neg-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.neg-summary-item{background:#f4f8fb;border:1px solid #dce7ee;border-radius:12px;padding:10px}
+.neg-summary-item b{display:block;font-size:15px;color:#06263f;margin-top:3px}
+.neg-summary-item span{font-size:11px;color:#6b7f8e}
+.timeline-wrap{position:relative;margin:14px 0 6px;padding-left:16px}
+.timeline-wrap:before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:#d7e4ea}
+.timeline-item{position:relative;margin:0 0 12px}
+.timeline-item:before{content:"";position:absolute;left:-15px;top:14px;width:8px;height:8px;border-radius:50%;background:#9db0bc;border:2px solid #fff;box-shadow:0 0 0 1px #cbd9e0}
+.timeline-item.me:before{background:#0aa58f}.timeline-item.counterparty:before{background:#d89b39}.timeline-item.system:before{background:#667b8a}
+.timeline-card{border-radius:14px;padding:11px 12px;border:1px solid #dce6eb;background:#fff}
+.timeline-item.me .timeline-card{background:#e9f9f5;border-color:#bfe9df}
+.timeline-item.counterparty .timeline-card{background:#fff7e9;border-color:#f2dfba}
+.timeline-item.system .timeline-card{background:#eef4f7;border-color:#d8e4e9}
+.timeline-role{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;color:#597080;margin-bottom:5px}
+.timeline-text{white-space:pre-wrap;line-height:1.42;color:#183242}
+.timeline-time{font-size:10px;color:#84949f;margin-top:7px}
+.timeline-ai{margin-top:8px;padding:9px 10px;border-radius:10px;background:#0a3554;color:#fff;font-size:12px;line-height:1.4}
+.timeline-ai.counter{background:#245c78}
+.timeline-ai b{color:#fff}
+.result-banner{border-radius:14px;padding:12px 13px;margin:12px 0;background:#edf9f6;border:1px solid #bfe7dc}
+.result-banner.lost{background:#fff6e6;border-color:#f1ddb2}
+.result-banner .row:last-child{border-bottom:0}
+.detail-actions{display:grid;gap:8px;margin:14px 0 4px}
+.detail-actions .primary,.detail-actions .secondary{width:100%}
+@media(max-width:420px){.neg-summary-grid{grid-template-columns:1fr 1fr}.neg-detail-head{display:block}}
