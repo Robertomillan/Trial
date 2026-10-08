@@ -21,7 +21,7 @@ class MarketDataTests(unittest.TestCase):
                 writer = csv.writer(f, delimiter=";")
                 writer.writerow(["competênciamov", "saldomovimentação", "cbo2002ocupação", "uf", "salário"])
                 for i in range(30):
-                    writer.writerow(["202601", 1, "142410", "35", str(10000 + i * 100)])
+                    writer.writerow(["202601", 1, "1424-10" if i == 0 else "142410", "35", str(10000 + i * 100)])
                 writer.writerow(["202601", -1, "142410", "35", "999999"])
                 writer.writerow(["202501", 1, "142410", "35", "999999"])
                 writer.writerow(["202601", 1, "142405", "35", "15000"])
