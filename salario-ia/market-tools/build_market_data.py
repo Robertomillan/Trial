@@ -65,8 +65,8 @@ def build(files, start, end, min_sample):
                     continue
                 if not (start <= period <= end and balance == 1):
                     continue
-                cbo = re.sub(r"\\D", "", row[names["cbo2002ocupacao"]])
-                uf = re.sub(r"\\D", "", row[names["uf"]])
+                cbo = re.sub(r"\D", "", row[names["cbo2002ocupacao"]])
+                uf = re.sub(r"\D", "", row[names["uf"]])
                 salary = number(row[names["salario"]])
                 if len(cbo) != 6 or len(uf) != 2 or salary is None or not (0 < salary <= 1_000_000):
                     continue
