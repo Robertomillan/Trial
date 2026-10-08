@@ -7,7 +7,7 @@
   "generated_at": "2026-10-08",
   "minimum_sample": 30,
   "source_url": "https://www.numerando.com.br/salarios/gerente-de-suprimentos/sao-paulo",
-  "limitations": "Recorte de janeiro de 2026; fonte secundária, não é uma extração direta do MTE. UF=35 significa estado de São Paulo, não município. Apenas admissões CLT. Sem PJ, PLR, benefícios ou senioridade.",
+  "limitations": "Recorte de janeiro de 2026; fonte secundária, não é uma extração direta do MTE. UF=35 significa estado de São Paulo, não município. Apenas admissões CLT. Sem PJ, PLR, benefícios ou senioridade. O registro Brasil é de fonte, período e população diferentes do recorte estadual SP; não comparar diretamente como se fossem a mesma amostra.",
   "records": [
     {
       "cbo": "142410",
@@ -22,6 +22,20 @@
       "source": "Numerando / Novo CAGED",
       "source_url": "https://www.numerando.com.br/salarios/gerente-de-suprimentos/sao-paulo",
       "basis": "Salários de admissão CLT; estado de São Paulo; janeiro/2026"
+    },
+    {
+      "cbo": "142410",
+      "uf": "BR",
+      "n": 3672,
+      "p25": 3691,
+      "p50": 7129.5,
+      "p75": 15028,
+      "mean": 10732.11,
+      "period_start": "202508",
+      "period_end": "202607",
+      "source": "Portal Salário / Novo CAGED",
+      "source_url": "https://www.salario.com.br/profissao/gerente-de-suprimentos-cbo-142410/",
+      "basis": "Salários base CLT de admissões e desligamentos, Brasil, ago/2025 a jul/2026; metodologia própria do Portal Salário"
     }
   ]
 }
