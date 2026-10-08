@@ -81,7 +81,7 @@ def build(files, start, end, min_sample):
         values.sort()
         records.append({
             "cbo": cbo, "uf": uf, "n": len(values),
-            "p25": percentile(values, .25), "p50": percentile(values, .5), "p75": percentile(values, .75)
+            "mean": round(sum(values) / len(values), 2), "p25": percentile(values, .25), "p50": percentile(values, .5), "p75": percentile(values, .75)
         })
     return {
         "schema_version": 1,
