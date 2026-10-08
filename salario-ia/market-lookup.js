@@ -5,9 +5,19 @@
 var autoFilled=false, occupations=[],catalogLoaded=false;
 function byId(id){return document.getElementById(id)}
 function status(s){var el=byId("marketStatus");if(el)el.textContent=s}
+function hideAverage(){var box=byId("marketAverageBox");if(box)box.hidden=true}
+function showAverage(item,data){
+ var box=byId("marketAverageBox");if(!box)return;
+ box.hidden=false;
+ byId("marketAverageValue").textContent=typeof item.mean==="number"?item.mean.toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0}):"Não publicada";
+ byId("marketAverageMeta").textContent=(item.basis||data.dataset)+" | Amostra: "+item.n+" | "+(item.period_start||data.period_start)+". Fonte secundária, não extração direta do MTE.";
+ var link=byId("marketSourceLink"),url=item.source_url||data.source_url;
+ if(url&&/^https:\/\//.test(url)){link.href=url;link.hidden=false}else link.hidden=true;
+}
 function fold(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim()}
 function closeMatches(){var list=byId("marketMatches");list.hidden=true;byId("marketOccupation").setAttribute("aria-expanded","false")}
 function clearAutomatic(){
+ hideAverage();
  if(autoFilled){["m25","m50","m75"].forEach(function(k){byId(k).value=""});autoFilled=false;if(typeof updatePremium==="function")updatePremium()}
 }
 async function loadCatalog(){
@@ -25,7 +35,8 @@ function selectOccupation(item){
  byId("selectedOccupation").textContent="CBO "+item.cbo+" • "+item.name;
  closeMatches();
  clearAutomatic();
- status("Ocupação selecionada. A base salarial oficial ainda está em preparação.");
+ status("Ocupação selecionada. Consultando referência disponível...");
+ window.lookupMarket();
 }
 function showMatches(){
  var query=fold(byId("marketOccupation").value),list=byId("marketMatches");
@@ -47,9 +58,9 @@ function showMatches(){
 }
 window.lookupMarket=async function(){
  var cbo=byId("marketCbo").value,uf=byId("marketUf").value;
- if(!cbo){status("Escolha uma ocupação na lista de resultados da pesquisa.");return}
- if(window.lastMode!=="clt"){status("O Novo CAGED informa salários CLT, não notas fiscais PJ. Esta comparação precisa de benchmark PJ específico ou conversão fundamentada.");return}
- status("Consultando a base agregada...");
+ if(!cbo){hideAverage();status("Escolha uma ocupação na lista de resultados da pesquisa.");return}
+ if(window.lastMode!=="clt"){hideAverage();status("O Novo CAGED informa salários CLT, não notas fiscais PJ. Esta comparação precisa de benchmark PJ específico ou conversão fundamentada.");return}
+ hideAverage();status("Consultando referências agregadas...");
  try{
   var response=await fetch("./market-data.json",{cache:"no-store"});
   if(!response.ok)throw Error("HTTP "+response.status);
@@ -58,14 +69,15 @@ window.lookupMarket=async function(){
   var item=data.records.find(function(x){return x.cbo===cbo&&x.uf===uf&&x.n>=30&&[x.p25,x.p50,x.p75].every(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>0})&&x.p25<=x.p50&&x.p50<=x.p75});
   if(!item){
    clearAutomatic();
-   status(data.records.length?"Sem amostra suficiente para esta ocupação e UF. Nenhuma faixa será inventada.":"Sem dados salariais ainda: o catálogo CBO foi carregado, mas os microdados oficiais do CAGED ainda não foram processados. Os percentis permanecem em branco.");
+   status(data.records.length?"Ainda não há referência validada para esta combinação de ocupação e estado. A cobertura é parcial; não inventaremos valores.":"Ainda não há dados salariais publicados para consulta.");
    return;
   }
   byId("m25").value=item.p25;
   byId("m50").value=item.p50;
   byId("m75").value=item.p75;
   autoFilled=true;
-  status("Fonte: "+data.source+" | "+data.dataset+" | "+data.period_start+" a "+data.period_end+" | n="+item.n+" admissões | "+byId("marketUf").selectedOptions[0].text+". Salários CLT brutos, sem benefícios.");
+  showAverage(item,data);
+  status("Referência encontrada: "+(item.source||data.source)+" | "+(item.period_start||data.period_start)+" | "+item.n+" registros | "+byId("marketUf").selectedOptions[0].text+". P25, mediana e P75 preenchidos automaticamente. Não inclui benefícios.");
   if(typeof updatePremium==="function")updatePremium();
  }catch(e){clearAutomatic();status("Não foi possível consultar a base agregada. Você pode informar uma pesquisa salarial comparável.")}
 };
@@ -82,8 +94,8 @@ async function checkDataAvailability(){
    status("A busca de profissões já funciona, mas ainda não existem salários oficiais carregados. Para avaliar a proposta agora, informe P25, P50 e P75 de uma pesquisa comparável.");
   }else{
    button.disabled=false;
-   button.textContent="Consultar salários oficiais";
-   status("Base oficial disponível. Pesquise sua profissão e consulte os percentis por localização.");
+   button.textContent="Consultar referência salarial";
+   status("Referências publicadas para algumas ocupações e estados. Pesquise a profissão para verificar cobertura; outras combinações ainda não estão disponíveis.");
   }
  }catch(e){
   button.disabled=true;
@@ -110,7 +122,7 @@ if(input){
  input.addEventListener("keydown",function(e){if(e.key==="Escape")closeMatches()});
  document.addEventListener("click",function(e){if(!e.target.closest(".occupationField"))closeMatches()});
 }
-var uf=byId("marketUf");if(uf)uf.addEventListener("change",function(){clearAutomatic()});
+var uf=byId("marketUf");if(uf)uf.addEventListener("change",function(){clearAutomatic();if(byId("marketCbo").value)window.lookupMarket()});
 ["m25","m50","m75"].forEach(function(id){
  var el=byId(id);
  if(el)el.addEventListener("input",function(){if(autoFilled){autoFilled=false;status("Percentis alterados manualmente. Confira fonte, período, cargo e localidade.")}});
