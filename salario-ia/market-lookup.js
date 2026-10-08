@@ -69,6 +69,29 @@ window.lookupMarket=async function(){
   if(typeof updatePremium==="function")updatePremium();
  }catch(e){clearAutomatic();status("Não foi possível consultar a base agregada. Você pode informar uma pesquisa salarial comparável.")}
 };
+async function checkDataAvailability(){
+ var button=document.querySelector(".marketLookupButton");
+ if(!button)return;
+ try{
+  var response=await fetch("./market-data.json",{cache:"no-store"});
+  if(!response.ok)throw Error("sem base");
+  var data=await response.json();
+  if(!Array.isArray(data.records)||!data.records.length){
+   button.disabled=true;
+   button.textContent="Base salarial em preparação";
+   status("A busca de profissões já funciona, mas ainda não existem salários oficiais carregados. Para avaliar a proposta agora, informe P25, P50 e P75 de uma pesquisa comparável.");
+  }else{
+   button.disabled=false;
+   button.textContent="Consultar salários oficiais";
+   status("Base oficial disponível. Pesquise sua profissão e consulte os percentis por localização.");
+  }
+ }catch(e){
+  button.disabled=true;
+  button.textContent="Base salarial indisponível";
+  status("Não foi possível carregar a base salarial. Informe referências de uma pesquisa comparável.");
+ }
+}
+checkDataAvailability();
 var input=byId("marketOccupation");
 if(input){
  input.addEventListener("focus",async function(){
