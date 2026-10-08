@@ -1,10 +1,27 @@
 {
   "schema_version": 1,
-  "source": "MTE / PDET / Novo CAGED",
-  "dataset": "Aguardando processamento de microdados oficiais",
-  "period_start": null,
-  "period_end": null,
-  "generated_at": null,
+  "source": "Numerando / microdados Novo CAGED (MTE)",
+  "dataset": "Salários brutos de admissão CLT, recorte publicado por terceiro; não inclui benefícios",
+  "period_start": "202601",
+  "period_end": "202601",
+  "generated_at": "2026-10-08",
   "minimum_sample": 30,
-  "records": []
+  "source_url": "https://www.numerando.com.br/salarios/gerente-de-suprimentos/sao-paulo",
+  "limitations": "Recorte de janeiro de 2026; fonte secundária, não é uma extração direta do MTE. UF=35 significa estado de São Paulo, não município. Apenas admissões CLT. Sem PJ, PLR, benefícios ou senioridade.",
+  "records": [
+    {
+      "cbo": "142410",
+      "uf": "35",
+      "n": 145,
+      "p25": 6229,
+      "p50": 12000,
+      "p75": 19000,
+      "mean": 13812,
+      "period_start": "202601",
+      "period_end": "202601",
+      "source": "Numerando / Novo CAGED",
+      "source_url": "https://www.numerando.com.br/salarios/gerente-de-suprimentos/sao-paulo",
+      "basis": "Salários de admissão CLT; estado de São Paulo; janeiro/2026"
+    }
+  ]
 }
