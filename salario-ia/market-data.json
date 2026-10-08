@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "source": "MTE / PDET / Novo CAGED",
+  "dataset": "Aguardando processamento de microdados oficiais",
+  "period_start": null,
+  "period_end": null,
+  "generated_at": null,
+  "minimum_sample": 30,
+  "records": []
+}
