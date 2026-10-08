@@ -1,0 +1,24 @@
+name: Test SalarioIA market pipeline
+on:
+  push:
+    branches: [negocia-ai-render]
+    paths:
+      - 'salario-ia/market-tools/**'
+      - 'salario-ia/market-lookup.js'
+      - '.github/workflows/test-salario-market.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python syntax and aggregation tests
+        working-directory: salario-ia/market-tools
+        run: |
+          python -m py_compile build_market_data.py
+          python -m unittest -v test_build_market_data.py
+      - name: JavaScript syntax
+        run: node --check salario-ia/market-lookup.js
