@@ -32,6 +32,7 @@ class MarketDataTests(unittest.TestCase):
             self.assertEqual(sp["cbo"], "142410")
             self.assertEqual(sp["n"], 30)
             self.assertAlmostEqual(sp["p50"], 11450)
+            self.assertAlmostEqual(sp["mean"], 11450)
             self.assertTrue(sp["p25"] <= sp["p50"] <= sp["p75"])
 
 
