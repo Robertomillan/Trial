@@ -62,8 +62,32 @@ jobs:
               raise SystemExit("BRAND_LOGO not found")
           img = Image.open(io.BytesIO(base64.b64decode(m.group(1)))).convert("RGB")
           h = img.height
-          # The approved brand symbol is the square region at the left of the wordmark.
-          mark = img.crop((0, 0, h, h)).resize((1024, 1024), Image.Resampling.LANCZOS)
+          # Start from the approved symbol at the left of the wordmark, then center its
+          # visible mark precisely inside a square launcher canvas.
+          raw = img.crop((0, 0, h, h))
+          px = raw.load()
+          bg = raw.getpixel((max(1, raw.width//20), max(1, raw.height//20)))
+          def delta(p):
+              return sum(abs(int(p[i])-int(bg[i])) for i in range(3))
+          xs=[]; ys=[]
+          for y in range(raw.height):
+              for x in range(raw.width):
+                  if delta(px[x,y]) > 42:
+                      xs.append(x); ys.append(y)
+          if xs and ys:
+              pad = max(4, int(h*0.025))
+              box=(max(0,min(xs)-pad),max(0,min(ys)-pad),min(raw.width,max(xs)+pad+1),min(raw.height,max(ys)+pad+1))
+              symbol=raw.crop(box)
+          else:
+              symbol=raw
+          canvas=Image.new("RGB",(1024,1024),bg)
+          max_side=760
+          scale=min(max_side/symbol.width,max_side/symbol.height)
+          size=(max(1,int(symbol.width*scale)),max(1,int(symbol.height*scale)))
+          symbol=symbol.resize(size,Image.Resampling.LANCZOS)
+          pos=((1024-size[0])//2,(1024-size[1])//2)
+          canvas.paste(symbol,pos)
+          mark=canvas
           out = Path("android-negocia/app/src/main/res/drawable")
           out.mkdir(parents=True, exist_ok=True)
           fallback = out / "ic_negocia.xml"
@@ -89,7 +113,7 @@ jobs:
       - name: Publish Negocia.AI Beta APK
         uses: actions/upload-artifact@v4
         with:
-          name: NegociaAI-Beta4-APK
+          name: NegociaAI-Beta5-APK
           path: android-negocia/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
