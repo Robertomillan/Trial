@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -25,6 +26,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(Color.rgb(6, 31, 53));
         getWindow().setNavigationBarColor(Color.WHITE);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -60,6 +62,11 @@ public class MainActivity extends Activity {
                 }
                 return true;
             }
+
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                installAndroidKeyboardUx(view);
+            }
         });
 
         setContentView(webView);
@@ -68,12 +75,44 @@ public class MainActivity extends Activity {
             webView.setOnApplyWindowInsetsListener((v, insets) -> {
                 android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
                 v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-                return WindowInsets.CONSUMED;
+                return insets;
             });
         }
 
         if (savedInstanceState == null) webView.loadUrl(HOME_URL);
         else webView.restoreState(savedInstanceState);
+    }
+
+    private void installAndroidKeyboardUx(WebView view) {
+        String js =
+            "(function(){"
+            + "if(window.__negociaAndroidKeyboardFix)return;"
+            + "window.__negociaAndroidKeyboardFix=true;"
+            + "document.documentElement.classList.add('android-app');"
+            + "var st=document.createElement('style');"
+            + "st.textContent='body.android-keyboard .bottomnav,body.android-keyboard .fab{display:none!important}'"
+            + "+'body.android-keyboard .app-shell{padding-bottom:16px!important;min-height:100%!important}'"
+            + "+'body.android-keyboard .page{padding-bottom:48vh!important}'"
+            + "+'body.android-keyboard .copilotbox{padding-bottom:28px!important}'"
+            + "+'body.android-keyboard textarea,body.android-keyboard input{scroll-margin-top:120px;scroll-margin-bottom:180px}';"
+            + "document.head.appendChild(st);"
+            + "var maxVH=(window.visualViewport&&window.visualViewport.height)||window.innerHeight;"
+            + "function setKeyboard(open){document.body.classList.toggle('android-keyboard',!!open);}"
+            + "function ensureVisible(el){setTimeout(function(){try{el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){el.scrollIntoView();}},260);}"
+            + "document.addEventListener('focusin',function(e){"
+            + "var el=e.target;if(el&&(el.matches('textarea,input,select'))){setKeyboard(true);ensureVisible(el);}"
+            + "},true);"
+            + "document.addEventListener('focusout',function(){setTimeout(function(){"
+            + "var a=document.activeElement;if(!a||!a.matches||!a.matches('textarea,input,select')){"
+            + "var vv=window.visualViewport;var open=vv&&(maxVH-vv.height>140);setKeyboard(open);"
+            + "}},220);},true);"
+            + "if(window.visualViewport){window.visualViewport.addEventListener('resize',function(){"
+            + "var h=window.visualViewport.height;if(h>maxVH)maxVH=h;"
+            + "var open=(maxVH-h)>140;setKeyboard(open);"
+            + "if(open){var a=document.activeElement;if(a&&a.matches&&a.matches('textarea,input,select'))ensureVisible(a);}"
+            + "});}"
+            + "})();";
+        view.evaluateJavascript(js, null);
     }
 
     @Override public void onSaveInstanceState(Bundle state) {
