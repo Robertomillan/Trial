@@ -21,6 +21,7 @@ public class MainActivity extends Activity {
     private static final String HOME_URL = "https://appassets.androidplatform.net/assets/index.html";
     private static final String LOCAL_HOST = "appassets.androidplatform.net";
     private WebView webView;
+    private int safeBottomPx = 0;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +67,7 @@ public class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 installAndroidKeyboardUx(view);
+                applySafeAreaToWeb(view);
             }
         });
 
@@ -74,13 +76,22 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= 30) {
             webView.setOnApplyWindowInsetsListener((v, insets) -> {
                 android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-                v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+                safeBottomPx = bars.bottom;
+                v.setPadding(bars.left, bars.top, bars.right, 0);
+                applySafeAreaToWeb(webView);
                 return insets;
             });
         }
 
         if (savedInstanceState == null) webView.loadUrl(HOME_URL);
         else webView.restoreState(savedInstanceState);
+    }
+
+    private void applySafeAreaToWeb(WebView view) {
+        if (view == null) return;
+        String js = "document.documentElement.classList.add('android-app');"
+                + "document.documentElement.style.setProperty('--android-safe-bottom','" + safeBottomPx + "px');";
+        view.evaluateJavascript(js, null);
     }
 
     private void installAndroidKeyboardUx(WebView view) {
