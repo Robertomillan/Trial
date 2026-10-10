@@ -48,6 +48,28 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
+      - name: Restore persistent Negocia.AI beta signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: negocia-ai-beta-debug-keystore-v1
+
+      - name: Create beta signing key on first run only
+        run: |
+          mkdir -p "$HOME/.android"
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          keytool -list -v -keystore "$HOME/.android/debug.keystore" -storepass android | grep -E "SHA256:|Alias name:" || true
+
       - name: Generate exact Negocia.AI launcher icon from brand asset
         run: |
           python -m pip install --quiet pillow
@@ -113,7 +135,7 @@ jobs:
       - name: Publish Negocia.AI Beta APK
         uses: actions/upload-artifact@v4
         with:
-          name: NegociaAI-Beta5-APK
+          name: NegociaAI-Beta6-APK
           path: android-negocia/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
