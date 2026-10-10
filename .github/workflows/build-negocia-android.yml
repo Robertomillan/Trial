@@ -1,0 +1,71 @@
+name: Build Negocia.AI Android Beta
+
+on:
+  push:
+    branches: [negocia-ai-render]
+    paths:
+      - 'android-negocia/**'
+      - 'index.html'
+      - 'styles-v091.css'
+      - 'ux-v093.css'
+      - 'history-detail-v097.css'
+      - 'brand-v091.js'
+      - 'app-core-v091.js'
+      - 'app-strategy-v091.js'
+      - 'app-engine-v091.js'
+      - 'app-ui-v091.js'
+      - 'commercial-structure-v092.js'
+      - 'ux-tone-v093.js'
+      - 'robust-v094.js'
+      - 'robust-v0941.js'
+      - 'materials-v095.js'
+      - 'status-history-v096.js'
+      - 'history-detail-v097.js'
+      - '.github/workflows/build-negocia-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android 35 using preinstalled SDK
+        run: |
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          SDKMANAGER="$(find /usr/local/lib/android/sdk/cmdline-tools -type f -name sdkmanager | head -1)"
+          "$SDKMANAGER" --sdk_root=/usr/local/lib/android/sdk "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Copy Negocia.AI web app into Android assets
+        run: |
+          ASSET_DIR="android-negocia/app/src/main/assets"
+          mkdir -p "$ASSET_DIR"
+          cp index.html "$ASSET_DIR/"
+          cp styles-v091.css ux-v093.css history-detail-v097.css "$ASSET_DIR/"
+          cp brand-v091.js app-core-v091.js app-strategy-v091.js app-engine-v091.js app-ui-v091.js "$ASSET_DIR/"
+          cp commercial-structure-v092.js ux-tone-v093.js robust-v094.js robust-v0941.js "$ASSET_DIR/"
+          cp materials-v095.js status-history-v096.js history-detail-v097.js "$ASSET_DIR/"
+
+      - name: Compile installable debug APK
+        working-directory: android-negocia
+        run: gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Publish Negocia.AI Beta APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NegociaAI-Beta1-APK
+          path: android-negocia/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
