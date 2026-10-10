@@ -58,3 +58,18 @@ html,body{background:#EDF3F7;color:var(--text)}
 .app-toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,18px);z-index:9999;background:#082844;color:#fff;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:700;opacity:0;pointer-events:none;transition:.2s ease;box-shadow:0 10px 30px rgba(8,40,68,.2)}.app-toast.show{opacity:1;transform:translate(-50%,0)}
 .section-head h2,h2{letter-spacing:-.025em;color:#0A2035}.row b{color:#0A2035}.metric.good b{color:#079276}.metric.warn b{color:#B8790B}.score-ring{background:conic-gradient(#13B9A4 calc(var(--s)*1%),#E6EEF3 0)}.bar i{background:linear-gradient(90deg,#13B9A4,#35CADC)}
 @media (min-width:700px){body{padding:24px 0}.app-shell{border-radius:28px;overflow:hidden;min-height:calc(100vh - 48px)}}
+
+
+/* Android native safe area: keep app navigation above system navigation buttons */
+:root{--android-safe-bottom:0px}
+.android-app .app-shell{padding-bottom:calc(88px + var(--android-safe-bottom))!important}
+.android-app .bottomnav{
+  bottom:var(--android-safe-bottom)!important;
+  padding-bottom:7px!important;
+}
+.android-app .fab{bottom:calc(92px + var(--android-safe-bottom))!important}
+.android-app .page{padding-bottom:calc(24px + var(--android-safe-bottom))}
+@media(min-width:760px){
+  .android-app .bottomnav{bottom:calc(22px + var(--android-safe-bottom))!important}
+  .android-app .fab{bottom:calc(112px + var(--android-safe-bottom))!important}
+}
