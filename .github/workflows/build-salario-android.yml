@@ -103,6 +103,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SalarioIA-Play-AAB-assinado
-          path: android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta1.aab
+          path: android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta2.aab
           if-no-files-found: error
           retention-days: 30
