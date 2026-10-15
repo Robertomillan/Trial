@@ -60,3 +60,52 @@ jobs:
           path: android-salario/app/build/outputs/bundle/debug/app-debug.aab
           if-no-files-found: error
           retention-days: 30
+
+      # Play Console requires a release AAB signed with a persistent upload key.
+      # Configure the four SALARIOIA_* secrets in GitHub Actions; never commit keys.
+      - name: Check Google Play upload signing secrets
+        id: signing
+        env:
+          SALARIOIA_KEYSTORE_BASE64: ${{ secrets.SALARIOIA_KEYSTORE_BASE64 }}
+          SALARIOIA_KEYSTORE_PASSWORD: ${{ secrets.SALARIOIA_KEYSTORE_PASSWORD }}
+          SALARIOIA_KEY_ALIAS: ${{ secrets.SALARIOIA_KEY_ALIAS }}
+          SALARIOIA_KEY_PASSWORD: ${{ secrets.SALARIOIA_KEY_PASSWORD }}
+        run: |
+          if [[ -n "$SALARIOIA_KEYSTORE_BASE64" && -n "$SALARIOIA_KEYSTORE_PASSWORD" && -n "$SALARIOIA_KEY_ALIAS" && -n "$SALARIOIA_KEY_PASSWORD" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Signing credentials available; building Play-ready release AAB."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release AAB skipped: configure the four SALARIOIA_* GitHub Actions secrets."
+          fi
+
+      - name: Build and sign Google Play release AAB
+        if: steps.signing.outputs.ready == 'true'
+        env:
+          SALARIOIA_KEYSTORE_BASE64: ${{ secrets.SALARIOIA_KEYSTORE_BASE64 }}
+          SALARIOIA_KEYSTORE_PASSWORD: ${{ secrets.SALARIOIA_KEYSTORE_PASSWORD }}
+          SALARIOIA_KEY_ALIAS: ${{ secrets.SALARIOIA_KEY_ALIAS }}
+          SALARIOIA_KEY_PASSWORD: ${{ secrets.SALARIOIA_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$SALARIOIA_KEYSTORE_BASE64" | base64 --decode > /tmp/salarioia-upload.jks
+          (cd android-salario && gradle --no-daemon --stacktrace :app:bundleRelease)
+          INPUT="android-salario/app/build/outputs/bundle/release/app-release.aab"
+          OUTPUT="android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta1.aab"
+          jarsigner -keystore /tmp/salarioia-upload.jks \
+            -storepass:env SALARIOIA_KEYSTORE_PASSWORD \
+            -keypass:env SALARIOIA_KEY_PASSWORD \
+            -signedjar "$OUTPUT" "$INPUT" "$SALARIOIA_KEY_ALIAS"
+          jarsigner -verify "$OUTPUT" | grep -q 'jar verified.'
+          rm -f /tmp/salarioia-upload.jks
+          echo "Release AAB signed and verified."
+
+      - name: Publish signed AAB for Google Play Console
+        if: steps.signing.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SalarioIA-Play-AAB-assinado
+          path: android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta1.aab
+          if-no-files-found: error
+          retention-days: 30
