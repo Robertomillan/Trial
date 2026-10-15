@@ -63,6 +63,7 @@ jobs:
 
       # Play Console requires a release AAB signed with a persistent upload key.
       # Configure the two SALARIOIA_* secrets in GitHub Actions; never commit keys.
+      # Trigger release signing build after GitHub Actions secrets setup.
       - name: Check Google Play upload signing secrets
         id: signing
         env:
