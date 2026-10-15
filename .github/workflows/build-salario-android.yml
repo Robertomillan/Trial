@@ -89,7 +89,7 @@ jobs:
           printf '%s' "$SALARIOIA_KEYSTORE_BASE64" | base64 --decode > /tmp/salarioia-upload.jks
           (cd android-salario && gradle --no-daemon --stacktrace :app:bundleRelease)
           INPUT="android-salario/app/build/outputs/bundle/release/app-release.aab"
-          OUTPUT="android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta2.aab"
+          OUTPUT="android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta3.aab"
           jarsigner -keystore /tmp/salarioia-upload.jks \
             -storepass:env SALARIOIA_KEYSTORE_PASSWORD \
             -keypass:env SALARIOIA_KEYSTORE_PASSWORD \
@@ -103,6 +103,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SalarioIA-Play-AAB-assinado
-          path: android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta2.aab
+          path: android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta3.aab
           if-no-files-found: error
           retention-days: 30
