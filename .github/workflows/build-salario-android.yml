@@ -62,21 +62,19 @@ jobs:
           retention-days: 30
 
       # Play Console requires a release AAB signed with a persistent upload key.
-      # Configure the four SALARIOIA_* secrets in GitHub Actions; never commit keys.
+      # Configure the two SALARIOIA_* secrets in GitHub Actions; never commit keys.
       - name: Check Google Play upload signing secrets
         id: signing
         env:
           SALARIOIA_KEYSTORE_BASE64: ${{ secrets.SALARIOIA_KEYSTORE_BASE64 }}
           SALARIOIA_KEYSTORE_PASSWORD: ${{ secrets.SALARIOIA_KEYSTORE_PASSWORD }}
-          SALARIOIA_KEY_ALIAS: ${{ secrets.SALARIOIA_KEY_ALIAS }}
-          SALARIOIA_KEY_PASSWORD: ${{ secrets.SALARIOIA_KEY_PASSWORD }}
         run: |
-          if [[ -n "$SALARIOIA_KEYSTORE_BASE64" && -n "$SALARIOIA_KEYSTORE_PASSWORD" && -n "$SALARIOIA_KEY_ALIAS" && -n "$SALARIOIA_KEY_PASSWORD" ]]; then
+          if [[ -n "$SALARIOIA_KEYSTORE_BASE64" && -n "$SALARIOIA_KEYSTORE_PASSWORD"  ]]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
             echo "Signing credentials available; building Play-ready release AAB."
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Release AAB skipped: configure the four SALARIOIA_* GitHub Actions secrets."
+            echo "::notice::Release AAB skipped: configure the two SALARIOIA_* GitHub Actions secrets."
           fi
 
       - name: Build and sign Google Play release AAB
@@ -84,8 +82,6 @@ jobs:
         env:
           SALARIOIA_KEYSTORE_BASE64: ${{ secrets.SALARIOIA_KEYSTORE_BASE64 }}
           SALARIOIA_KEYSTORE_PASSWORD: ${{ secrets.SALARIOIA_KEYSTORE_PASSWORD }}
-          SALARIOIA_KEY_ALIAS: ${{ secrets.SALARIOIA_KEY_ALIAS }}
-          SALARIOIA_KEY_PASSWORD: ${{ secrets.SALARIOIA_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           umask 077
@@ -95,8 +91,8 @@ jobs:
           OUTPUT="android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.0-beta1.aab"
           jarsigner -keystore /tmp/salarioia-upload.jks \
             -storepass:env SALARIOIA_KEYSTORE_PASSWORD \
-            -keypass:env SALARIOIA_KEY_PASSWORD \
-            -signedjar "$OUTPUT" "$INPUT" "$SALARIOIA_KEY_ALIAS"
+            -keypass:env SALARIOIA_KEYSTORE_PASSWORD \
+            -signedjar "$OUTPUT" "$INPUT" "salarioia-upload"
           jarsigner -verify "$OUTPUT" | grep -q 'jar verified.'
           rm -f /tmp/salarioia-upload.jks
           echo "Release AAB signed and verified."
