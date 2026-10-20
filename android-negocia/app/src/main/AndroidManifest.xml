@@ -5,8 +5,8 @@
       android:allowBackup="false"
       android:fullBackupContent="false"
       android:label="Negocia.AI"
-      android:icon="@drawable/ic_negocia"
-      android:roundIcon="@drawable/ic_negocia"
+      android:icon="@mipmap/ic_launcher"
+      android:roundIcon="@mipmap/ic_launcher_round"
       android:theme="@android:style/Theme.Material.Light.NoActionBar"
       android:usesCleartextTraffic="false"
       android:supportsRtl="true">
