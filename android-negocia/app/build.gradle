@@ -10,8 +10,8 @@ android {
         applicationId 'com.negociaai.app'
         minSdk 24
         targetSdk 35
-        versionCode 13
-        versionName '0.9.10-beta13'
+        versionCode 14
+        versionName '0.9.10-beta14'
     }
 
     buildTypes {
