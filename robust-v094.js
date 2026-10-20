@@ -30,7 +30,7 @@
     return null;
   }
 
-  function acceptanceSignalV4(text){return /\bfechado\b|\baceito\b|\bcombinado\b|\bpode ser\b|\bneg[oó]cio fechado\b|\bde acordo\b|\bok\b/i.test(lower(text))}
+  function acceptanceSignalV4(text){return /\bfechado\b|\bfechamos\b|\bfechou\b|\bvamos fechar\b|\bpodemos fechar\b|\baceito\b|\bcombinado\b|\bpode ser\b|\bneg[oó]cio fechado\b|\bacordo fechado\b|\bde acordo\b|\bok\b/i.test(lower(text))}
   function quantityConditionV4(text){return /por esse valor|nesse valor|neste valor|tem que comprar|precisa comprar|para esse pre[cç]o|volume de\s+\d+\s*(?:unidades?|itens?|carros?|ve[ií]culos?)|m[ií]nimo de\s+\d+\s*(?:unidades?|itens?|carros?|ve[ií]culos?)/i.test(lower(text))}
   function perUnitSignalV4(text){return /\bcada\b|por\s+unidade|unit[aá]ri[oa]|\/\s*(?:un|und|unid)|cada\s+um/i.test(lower(text))}
 
