@@ -122,8 +122,18 @@
   };
 
   window.sendCopilot=function(){
+    const el=document.getElementById('copilotText');
+    const text=el&&el.value?el.value.trim():'';
+    if(!text)return;
+
+    const previousSpeaker=state&&state.speaker==='me'?'me':'counterparty';
     prevSendCopilot();
+
+    if(state){
+      state.speaker=previousSpeaker==='counterparty'?'me':'counterparty';
+    }
     persistCurrentChat();
+    render();
   };
 
   window.saveResult=function(){
