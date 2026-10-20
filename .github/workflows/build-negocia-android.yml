@@ -10,6 +10,7 @@ on:
       - 'ux-v093.css'
       - 'history-detail-v097.css'
       - 'brand-v091.js'
+      - 'assets/negocia-icon.webp'
       - 'app-core-v091.js'
       - 'app-strategy-v091.js'
       - 'app-engine-v091.js'
@@ -70,83 +71,19 @@ jobs:
           fi
           keytool -list -v -keystore "$HOME/.android/debug.keystore" -storepass android | grep -E "SHA256:|Alias name:" || true
 
-      - name: Generate exact Negocia.AI launcher icon from brand asset
+      - name: Install HD Negocia.AI launcher icon
         run: |
-          python -m pip install --quiet pillow
-          python - <<'PY'
-          import base64, io, re
-          from pathlib import Path
-          from PIL import Image
-
-          src = Path("brand-v091.js").read_text(encoding="utf-8")
-          m = re.search(r"data:image/webp;base64,([A-Za-z0-9+/=]+)", src)
-          if not m:
-              raise SystemExit("BRAND_LOGO not found")
-          img = Image.open(io.BytesIO(base64.b64decode(m.group(1)))).convert("RGB")
-          h = img.height
-          raw = img.crop((0, 0, h, h))
-          bg = raw.getpixel((max(1, raw.width//20), max(1, raw.height//20)))
-
-          # Extract the approved symbol from its navy background and keep antialiasing.
-          rgba = raw.convert("RGBA")
-          pix = rgba.load()
-          xs=[]; ys=[]
-          for y in range(rgba.height):
-              for x in range(rgba.width):
-                  r,g,b,a = pix[x,y]
-                  d = abs(r-bg[0]) + abs(g-bg[1]) + abs(b-bg[2])
-                  if d <= 24:
-                      alpha = 0
-                  elif d >= 90:
-                      alpha = 255
-                  else:
-                      alpha = int((d-24) * 255 / 66)
-                  pix[x,y] = (r,g,b,alpha)
-                  if alpha > 24:
-                      xs.append(x); ys.append(y)
-
-          if not xs or not ys:
-              raise SystemExit("Could not isolate Negocia.AI symbol")
-
-          pad = max(4, int(h*0.025))
-          box=(max(0,min(xs)-pad),max(0,min(ys)-pad),
-               min(rgba.width,max(xs)+pad+1),min(rgba.height,max(ys)+pad+1))
-          symbol = rgba.crop(box)
-
-          out = Path("android-negocia/app/src/main/res/drawable")
-          out.mkdir(parents=True, exist_ok=True)
-          fallback = out / "ic_negocia.xml"
-          if fallback.exists():
-              fallback.unlink()
-
-          # Transparent symbol used by the premium splash.
-          splash_symbol = symbol.copy()
-          max_symbol = 640
-          scale=min(max_symbol/splash_symbol.width,max_symbol/splash_symbol.height)
-          splash_size=(max(1,int(splash_symbol.width*scale)),max(1,int(splash_symbol.height*scale)))
-          splash_symbol=splash_symbol.resize(splash_size,Image.Resampling.LANCZOS)
-          splash_symbol.save(out / "negocia_symbol.png", optimize=True)
-
-          # Launcher icon: same approved symbol, optically centered on brand navy.
-          canvas=Image.new("RGBA",(1024,1024),(*bg,255))
-          max_side=720
-          scale=min(max_side/symbol.width,max_side/symbol.height)
-          size=(max(1,int(symbol.width*scale)),max(1,int(symbol.height*scale)))
-          icon_symbol=symbol.resize(size,Image.Resampling.LANCZOS)
-          pos=((1024-size[0])//2,(1024-size[1])//2)
-          canvas.alpha_composite(icon_symbol,pos)
-          canvas.convert("RGB").save(out / "ic_negocia.png", optimize=True)
-
-          old_splash = out / "negocia_splash_logo.png"
-          if old_splash.exists():
-              old_splash.unlink()
-          PY
+          OUT="android-negocia/app/src/main/res/drawable"
+          mkdir -p "$OUT"
+          rm -f "$OUT/ic_negocia.xml" "$OUT/ic_negocia.png" "$OUT/ic_negocia.webp" "$OUT/negocia_symbol.png"
+          cp assets/negocia-icon.webp "$OUT/ic_negocia.webp"
 
       - name: Copy Negocia.AI web app into Android assets
         run: |
           ASSET_DIR="android-negocia/app/src/main/assets"
-          mkdir -p "$ASSET_DIR"
+          mkdir -p "$ASSET_DIR/assets"
           cp index.html "$ASSET_DIR/"
+          cp assets/negocia-icon.webp "$ASSET_DIR/assets/"
           cp styles-v091.css ux-v093.css history-detail-v097.css "$ASSET_DIR/"
           cp brand-v091.js app-core-v091.js app-strategy-v091.js app-engine-v091.js app-ui-v091.js "$ASSET_DIR/"
           cp commercial-structure-v092.js ux-tone-v093.js robust-v094.js robust-v0941.js "$ASSET_DIR/"
@@ -159,7 +96,7 @@ jobs:
       - name: Publish Negocia.AI Beta APK
         uses: actions/upload-artifact@v4
         with:
-          name: NegociaAI-Beta11-APK
+          name: NegociaAI-Beta12-APK
           path: android-negocia/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
