@@ -71,12 +71,42 @@ jobs:
           fi
           keytool -list -v -keystore "$HOME/.android/debug.keystore" -storepass android | grep -E "SHA256:|Alias name:" || true
 
-      - name: Install HD Negocia.AI launcher icon
+      - name: Generate native Android launcher icons from HD brand asset
         run: |
-          OUT="android-negocia/app/src/main/res/drawable"
-          mkdir -p "$OUT"
-          rm -f "$OUT/ic_negocia.xml" "$OUT/ic_negocia.png" "$OUT/ic_negocia.webp" "$OUT/negocia_symbol.png"
-          cp assets/negocia-icon.webp "$OUT/ic_negocia.webp"
+          python -m pip install --quiet pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          src = Path("assets/negocia-icon.webp")
+          if not src.exists():
+              raise SystemExit("Missing assets/negocia-icon.webp")
+
+          img = Image.open(src).convert("RGBA")
+          res = Path("android-negocia/app/src/main/res")
+
+          sizes = {
+              "mipmap-mdpi": 48,
+              "mipmap-hdpi": 72,
+              "mipmap-xhdpi": 96,
+              "mipmap-xxhdpi": 144,
+              "mipmap-xxxhdpi": 192,
+          }
+
+          for folder, size in sizes.items():
+              out = res / folder
+              out.mkdir(parents=True, exist_ok=True)
+              icon = img.resize((size, size), Image.Resampling.LANCZOS)
+              icon.save(out / "ic_launcher.png", optimize=True)
+              icon.save(out / "ic_launcher_round.png", optimize=True)
+
+          # Remove the old drawable launcher asset so Android cannot fall back to it.
+          old = res / "drawable"
+          for name in ("ic_negocia.xml","ic_negocia.png","ic_negocia.webp","negocia_symbol.png"):
+              p = old / name
+              if p.exists():
+                  p.unlink()
+          PY
 
       - name: Copy Negocia.AI web app into Android assets
         run: |
@@ -96,7 +126,7 @@ jobs:
       - name: Publish Negocia.AI Beta APK
         uses: actions/upload-artifact@v4
         with:
-          name: NegociaAI-Beta13-APK
+          name: NegociaAI-Beta14-APK
           path: android-negocia/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
