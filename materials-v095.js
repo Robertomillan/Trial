@@ -49,8 +49,9 @@
       const term=m[1].toUpperCase();
       let tail=src.slice(re.lastIndex,re.lastIndex+55);
       tail=tail.split(/\s+\bou\b\s+|[;|]/i)[0];
-      tail=tail.replace(/^[\s,:-]+/,'').replace(/\s+(?:por|a|em)\s+(?:USD|US\$|EUR|BRL|R\$|GBP|CNY|RMB|CHF|JPY|\$|€|£|¥).*$/i,'').trim();
-      const place=tail.replace(/[.,].*$/,'').trim().slice(0,38)||null;
+      tail=tail.replace(/^[\s,:;.!?()\-]+/,'').replace(/\s+(?:por|a|em)\s+(?:USD|US\$|EUR|BRL|R\$|GBP|CNY|RMB|CHF|JPY|\$|€|£|¥).*$/i,'').trim();
+      let place=tail.replace(/[.,;!?].*$/,'').trim().slice(0,38)||null;
+      if(place&&!/[A-Za-zÀ-ÿ0-9]/.test(place))place=null;
       out.push({term,index:m.index,end:re.lastIndex,place,meta:INCOTERMS[term]});
     }
     return out;
@@ -125,7 +126,30 @@
     if(!m.incoterms.length)return a;
     const multi=m.incoterms.length>1;
     a.material=m;
-    if(a.type!=='acceptance')a.type='incoterm';
+
+    if(a.type==='acceptance'){
+      const terms=Array.from(new Set(m.incoterms.map(x=>x.term+(x.place?' '+x.place:''))));
+      const termLabel=terms.join(' / ');
+      a.label='Aceite + condição logística';
+      a.intent='A contraparte aceitou a condição econômica e informou o Incoterm. O foco agora é formalizar o acordo, não reabrir a barganha.';
+      a.lever='Não mova preço novamente. Feche por escrito o Incoterm completo, local nomeado, versão contratual e os custos/responsabilidades que permanecem fora do termo.';
+      a.args=[
+        'A condição econômica foi aceita. Pare de negociar preço.',
+        `Incoterm informado: ${termLabel}. Confirme o local nomeado e a referência contratual aplicável.`,
+        'Formalize frete, seguro, despesas de origem/destino, desembaraço, tributos, pagamento, garantia e prazo de entrega.'
+      ];
+      a.questions=[
+        `Só confirmando: fechamos no valor acordado em ${termLabel}, com qual local nomeado?`,
+        'Quais despesas no destino, tributos e desembaraço permanecem fora da condição?',
+        'Qual é a condição de pagamento, prazo de entrega e garantia?'
+      ];
+      a.concession='Nenhuma concessão adicional de preço é necessária. Qualquer mudança posterior de escopo ou responsabilidade logística deve ser tratada como nova troca de valor.';
+      a.dont='Não reabra o preço depois do aceite. Use esta etapa apenas para eliminar ambiguidades e formalizar as condições.';
+      a.nextMove=`Pare de negociar preço. Formalize o fechamento em ${termLabel}, confirme o local nomeado e registre por escrito as responsabilidades logísticas, pagamento, garantia e entrega.`;
+      return a;
+    }
+
+    a.type='incoterm';
     a.label=multi?'Incoterm / comparação logística':'Incoterm / responsabilidade logística';
     a.intent=multi?'As alternativas usam estruturas logísticas diferentes. O preço nominal não representa sozinho o custo econômico total.':'O Incoterm altera custo, responsabilidade operacional e momento de transferência de risco.';
     a.lever='Negocie preço do material e responsabilidade logística como um pacote. Peça local nomeado, versão do Incoterm e abertura dos componentes que não estão incluídos.';
@@ -182,6 +206,13 @@
 
   window.toneResponse=function(original){
     const a=state&&state.lastAnalysis;
+    if(a&&a.type==='acceptance'&&a.material&&a.material.incoterms.length){
+      const terms=Array.from(new Set(a.material.incoterms.map(x=>`${x.term}${x.place?' '+x.place:''}`))).join(' / ');
+      const price=a.offer?brl(a.offer):null;
+      if(state.tone==='colaborativo')return `Perfeito, obrigado. Então estamos alinhados${price?` em ${price}`:''} com ${terms}. Para concluirmos sem ruído, me confirme o local nomeado, o que está incluído em frete e seguro, despesas de destino, tributos, pagamento, garantia e prazo de entrega. Com isso formalizado, seguimos com o fechamento.`;
+      if(state.tone==='firme')return `Fechado${price?` em ${price}`:''}, condição ${terms}. Não vou reabrir preço. Antes da emissão do pedido, preciso apenas da confirmação por escrito do local nomeado, responsabilidades de frete/seguro, despesas de destino, tributos, pagamento, garantia e prazo de entrega.`;
+      return `Perfeito. Fechamos${price?` em ${price}`:''} com ${terms}. Só preciso confirmar o local nomeado, responsabilidades de frete e seguro, despesas no destino, tributos, condição de pagamento, garantia e prazo de entrega. Com esses pontos registrados, seguimos.`;
+    }
     if(a&&a.type==='incoterm'&&a.material&&a.material.incoterms.length){
       const opts=a.material.incoterms.map(x=>`${x.term}${x.place?' '+x.place:''}`).join(' versus ');
       if(state.tone==='colaborativo')return `Para fazermos uma comparação justa entre ${opts}, gostaria de colocar as alternativas na mesma base de landed cost. Você consegue me confirmar, em cada opção, o local nomeado e o que está incluído em frete, seguro, despesas locais, desembaraço, tributos e entrega final?`;
