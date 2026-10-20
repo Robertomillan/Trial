@@ -106,3 +106,20 @@ html,body{background:#EDF3F7;color:var(--text)}
   .android-app .bottomnav{bottom:auto!important}
   .android-app .fab{bottom:calc(26px + var(--android-safe-bottom))!important}
 }
+
+
+/* v0.9.10 beta12: HD brand system */
+.brand-lockup{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-icon-hd{display:block;width:52px;height:52px;flex:0 0 52px;object-fit:contain;border-radius:14px;filter:drop-shadow(0 7px 13px rgba(0,0,0,.24))}
+.brand-copy{min-width:0;display:flex;flex-direction:column;justify-content:center}
+.brand-wordmark{color:#fff;font-size:27px;font-weight:900;line-height:.94;letter-spacing:-.045em;white-space:nowrap}
+.brand-wordmark span{color:#39D8C5}
+.brand-tagline{margin-top:5px;color:#BFD3E1;font-size:10.5px;font-weight:500;line-height:1.15;letter-spacing:.005em;white-space:nowrap}
+.official-logo{display:none!important}
+@media(max-width:390px){
+  .brand-lockup{gap:10px}
+  .brand-icon-hd{width:46px;height:46px;flex-basis:46px;border-radius:12px}
+  .brand-wordmark{font-size:24px}
+  .brand-tagline{font-size:9.5px}
+  .brand{min-height:50px}
+}
