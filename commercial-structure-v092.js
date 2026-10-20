@@ -18,7 +18,7 @@
   }
   function perUnitSignalV2(text){return /\bcada\b|por\s+unidade|unit[aá]ri[oa]|\/\s*(?:un|und|unid)|cada\s+um/i.test(String(text||''))}
   function priceConstraintV2(text){return /dentro\s+(?:desse|deste|do)\s+valor|no\s+m[aá]ximo|m[aá]ximo\s+de|at[eé]\s+r?\$?|n[aã]o\s+passa|n[aã]o\s+acima|teto/i.test(String(text||''))}
-  function acceptanceSignalV2(text){return /\bfechado\b|\baceito\b|\bcombinado\b|\bpode ser\b|\bneg[oó]cio fechado\b|\bok[,!.\s]/i.test(String(text||''))}
+  function acceptanceSignalV2(text){return /\bfechado\b|\bfechamos\b|\bfechou\b|\bvamos fechar\b|\bpodemos fechar\b|\baceito\b|\bcombinado\b|\bpode ser\b|\bneg[oó]cio fechado\b|\bacordo fechado\b|\bde acordo\b|\bok[,!.\s]/i.test(String(text||''))}
   function quantityConditionSignalV2(text){return /por esse valor|nesse valor|neste valor|tem que comprar|precisa comprar|m[ií]nimo de|volume de|s[oó] consigo.*\d+|para esse pre[cç]o/i.test(String(text||''))}
   function lastEventV2(n,speaker){return (n.events||[]).slice().reverse().find(e=>e.speaker===speaker)||null}
   function eventStructureV2(e,n){if(!e)return null;if(e.structure)return e.structure;const offer=e.offer||(e.analysis&&e.analysis.offer)||extractOffer(e.text||'',n);const quantity=qtyFromTextV2(e.text||'');return {quantity,unitPrice:offer,total:quantity&&offer?quantity*offer:null,text:e.text||''}}
