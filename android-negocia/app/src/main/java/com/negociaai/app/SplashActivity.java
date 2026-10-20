@@ -44,10 +44,10 @@ public class SplashActivity extends Activity {
         stack.setScaleY(.97f);
 
         ImageView symbol = new ImageView(this);
-        symbol.setImageResource(R.drawable.negocia_symbol);
+        symbol.setImageResource(R.drawable.ic_negocia);
         symbol.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         LinearLayout.LayoutParams symbolParams =
-                new LinearLayout.LayoutParams(dp(116), dp(116));
+                new LinearLayout.LayoutParams(dp(126), dp(126));
         stack.addView(symbol, symbolParams);
 
         TextView name = new TextView(this);
