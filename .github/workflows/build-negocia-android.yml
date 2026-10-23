@@ -50,27 +50,13 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
-      - name: Restore persistent Negocia.AI beta signing key
-        uses: actions/cache@v4
-        with:
-          path: ~/.android/debug.keystore
-          key: negocia-ai-beta-debug-keystore-v1
-
-      - name: Create beta signing key on first run only
+      - name: Restore fixed Negocia.AI beta signing key
         run: |
-          mkdir -p "$HOME/.android"
-          if [ ! -f "$HOME/.android/debug.keystore" ]; then
-            keytool -genkeypair -v \
-              -keystore "$HOME/.android/debug.keystore" \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -dname "CN=Android Debug,O=Android,C=US"
-          fi
-          keytool -list -v -keystore "$HOME/.android/debug.keystore" -storepass android | grep -E "SHA256:|Alias name:" || true
+          mkdir -p android-negocia/beta-signing
+          base64 -d android-negocia/beta-signing/negocia-beta-fixed.jks.b64 > android-negocia/beta-signing/negocia-beta-fixed.jks
+          keytool -list -v \
+            -keystore android-negocia/beta-signing/negocia-beta-fixed.jks \
+            -storepass NegociaBeta2026 | grep -E "SHA256:|Alias name:"
 
       - name: Generate native Android launcher icons from embedded HD brand
         run: |
@@ -126,10 +112,17 @@ jobs:
         working-directory: android-negocia
         run: gradle --no-daemon --stacktrace :app:assembleDebug
 
+      - name: Verify APK signing certificate
+        run: |
+          APKSIGNER="/usr/local/lib/android/sdk/build-tools/35.0.0/apksigner"
+          APK="android-negocia/app/build/outputs/apk/debug/app-debug.apk"
+          "$APKSIGNER" verify --print-certs "$APK" | tee /tmp/apk-cert.txt
+          grep -q "58:1A:2D:9B:A3:A6:8E:8B:05:11:56:31:27:56:AE:93:EB:95:7C:15:13:0F:94:2C:C5:A8:EB:23:02:DE:63:5B" /tmp/apk-cert.txt
+
       - name: Publish Negocia.AI Beta APK
         uses: actions/upload-artifact@v4
         with:
-          name: NegociaAI-Beta16-APK
+          name: NegociaAI-Beta17-APK
           path: android-negocia/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
