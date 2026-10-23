@@ -10,13 +10,28 @@ android {
         applicationId 'com.negociaai.app'
         minSdk 24
         targetSdk 35
-        versionCode 16
-        versionName '0.9.12-beta16'
+        versionCode 17
+        versionName '0.9.12-beta17'
+    }
+
+    signingConfigs {
+        betaFixed {
+            storeFile file('../beta-signing/negocia-beta-fixed.jks')
+            storePassword 'NegociaBeta2026'
+            keyAlias 'negocia_beta'
+            keyPassword 'NegociaBeta2026'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
     }
 
     buildTypes {
+        debug {
+            signingConfig signingConfigs.betaFixed
+        }
         release {
             minifyEnabled false
+            signingConfig signingConfigs.betaFixed
         }
     }
 
