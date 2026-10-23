@@ -22,6 +22,7 @@ on:
       - 'materials-v095.js'
       - 'status-history-v096.js'
       - 'history-detail-v097.js'
+      - 'context-engine-v101.js'
       - '.github/workflows/build-negocia-android.yml'
   workflow_dispatch:
 
@@ -119,7 +120,7 @@ jobs:
           cp styles-v091.css ux-v093.css history-detail-v097.css "$ASSET_DIR/"
           cp brand-v091.js app-core-v091.js app-strategy-v091.js app-engine-v091.js app-ui-v091.js "$ASSET_DIR/"
           cp commercial-structure-v092.js ux-tone-v093.js robust-v094.js robust-v0941.js "$ASSET_DIR/"
-          cp materials-v095.js status-history-v096.js history-detail-v097.js "$ASSET_DIR/"
+          cp materials-v095.js status-history-v096.js history-detail-v097.js context-engine-v101.js "$ASSET_DIR/"
 
       - name: Compile installable debug APK
         working-directory: android-negocia
@@ -128,7 +129,7 @@ jobs:
       - name: Publish Negocia.AI Beta APK
         uses: actions/upload-artifact@v4
         with:
-          name: NegociaAI-Beta14-APK
+          name: NegociaAI-Beta15-APK
           path: android-negocia/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
