@@ -117,7 +117,7 @@ jobs:
           APKSIGNER="/usr/local/lib/android/sdk/build-tools/35.0.0/apksigner"
           APK="android-negocia/app/build/outputs/apk/debug/app-debug.apk"
           "$APKSIGNER" verify --print-certs "$APK" | tee /tmp/apk-cert.txt
-          grep -q "58:1A:2D:9B:A3:A6:8E:8B:05:11:56:31:27:56:AE:93:EB:95:7C:15:13:0F:94:2C:C5:A8:EB:23:02:DE:63:5B" /tmp/apk-cert.txt
+          grep -qi "581a2d9ba3a68e8b051156312756ae93eb957c15130f942cc5a8eb2302de635b" /tmp/apk-cert.txt
 
       - name: Publish Negocia.AI Beta APK
         uses: actions/upload-artifact@v4
