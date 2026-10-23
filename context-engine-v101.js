@@ -76,6 +76,53 @@
     return [...new Set(use.map(v=>Math.round(v)))];
   }
 
+
+  function installmentCountToken(token){
+    if(!token)return null;
+    const numeric=Number(token);
+    if(Number.isFinite(numeric)&&numeric>=1&&numeric<=48)return numeric;
+    const p=wordsNumber(token);
+    return p&&p.value>=1&&p.value<=48?p.value:null;
+  }
+
+  function installmentAmountToken(token,n){
+    if(!token)return null;
+    const direct=(prevExtractOffers?prevExtractOffers(token,n):[]);
+    if(direct.length)return direct[direct.length-1];
+    const w=writtenCandidates(token);
+    if(w.length)return inferWrittenValue(w[w.length-1],n,token);
+    const short=numericShortCandidates(token,n);
+    if(short.length)return short[short.length-1].value;
+    return null;
+  }
+
+  function installmentStructure(text,n){
+    const t=clean(text);
+    const countWord='(?:um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|doze|treze|quatorze|catorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|vinte\\s+e\\s+um|vinte\\s+e\\s+dois|vinte\\s+e\\s+tres|vinte\\s+e\\s+quatro)';
+    const amountWord='(?:zero|um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|quatorze|catorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa|cem|cento|duzentos|duzentas|trezentos|trezentas|quatrocentos|quatrocentas|quinhentos|quinhentas|seiscentos|seiscentas|setecentos|setecentas|oitocentos|oitocentas|novecentos|novecentas|mil|milhao|milhoes)';
+    const amountExpr=`(?:r\\$\\s*)?(?:\\d+(?:[.,]\\d+)?\\s*(?:k|mil|mi|milhao|milhoes)?|${amountWord}(?:\\s+e\\s+${amountWord}|\\s+${amountWord})*)`;
+    const patterns=[
+      new RegExp('\\b(\\d{1,2}|'+countWord+')\\s*x\\s*(?:iguais?\\s*)?(?:de|a|no valor de)?\\s*('+amountExpr+')','i'),
+      new RegExp('\\b(\\d{1,2}|'+countWord+')\\s*(?:parcelas?|prestacoes?)\\s*(?:iguais?\\s*)?(?:de|a|no valor de)?\\s*('+amountExpr+')','i'),
+      new RegExp('\\b(?:em\\s+)?(\\d{1,2}|'+countWord+')\\s*(?:vezes|parcelas?|prestacoes?)\\s*(?:iguais?\\s*)?(?:de|a|no valor de)?\\s*('+amountExpr+')','i')
+    ];
+    for(const re of patterns){
+      const m=t.match(re);
+      if(!m)continue;
+      const installments=installmentCountToken(m[1]);
+      const installmentValue=installmentAmountToken(m[2],n);
+      if(!(installments&&installmentValue))continue;
+      const total=installments*installmentValue;
+      return{
+        installments,
+        installmentValue:Math.round(installmentValue),
+        total:Math.round(total),
+        label:`${installments}x de ${typeof money==='function'?money(installmentValue):installmentValue}`
+      };
+    }
+    return null;
+  }
+
   window.extractOffers=function(text,n){return allOffers(text,n)};
   window.extractOffer=function(text,n){const v=allOffers(text,n);return v.length?v[v.length-1]:(prevExtractOffer?prevExtractOffer(text,n):null)};
 
@@ -163,16 +210,64 @@
   }
 
   window.buildAnalysis=function(text,n){
-    const detected=allOffers(text,n);
+    const installment=installmentStructure(text,n);
+    let detected=allOffers(text,n);
     let normalized=text;
-    if(detected.length){
+
+    if(installment){
+      detected=[installment.total];
+      normalized=`${text} | valor total da proposta R$ ${installment.total} | ${installment.installments}x de R$ ${installment.installmentValue}`;
+    }else if(detected.length){
       const v=detected[detected.length-1];
       if(!(prevExtractOffers&&prevExtractOffers(text,n).length)) normalized=`${text} | valor informado R$ ${Math.round(v)}`;
     }
+
     let a=prevBuildAnalysis(normalized,n);
-    if(detected.length&&!a.offer){
+
+    if(installment){
+      const days=Array.from({length:installment.installments},(_,i)=>(i+1)*30);
+      const annualRate=.15;
+      const pv=days.reduce((sum,d)=>sum+installment.installmentValue/Math.pow(1+annualRate,d/365),0);
+      a.offer=installment.total;
+      a.offers=[installment.total];
+      a.type='payment';
+      a.label='Parcelamento / valor total';
+      a.payment={
+        installments:installment.installments,
+        days,
+        annualRate,
+        pv,
+        benefit:Math.max(0,installment.total-pv),
+        label:`${installment.installments}x de ${typeof money==='function'?money(installment.installmentValue):installment.installmentValue} · 30/${days.slice(1).join('/')} dias`,
+        cashEquivalent:pv,
+        installmentValue:installment.installmentValue,
+        nominalTotal:installment.total
+      };
+      const dir=typeof direction==='function'?direction(n):'down';
+      if(dir==='down'){
+        a.status=installment.total<=Number(n.target)?'Entrou na faixa-alvo':installment.total<=Number(n.limit)?'Faixa negociável':'Ainda fora da sua faixa';
+      }else{
+        a.status=installment.total>=Number(n.target)?'Atingiu ou superou o alvo':installment.total>=Number(n.limit)?'Faixa negociável':'Ainda fora da sua faixa';
+      }
+      a.intent=`A contraparte propôs ${installment.installments} parcelas iguais de ${typeof money==='function'?money(installment.installmentValue):installment.installmentValue}, total nominal de ${typeof money==='function'?money(installment.total):installment.total}. Compare o total e o valor presente do fluxo, não apenas a parcela isolada.`;
+      a.args=[
+        `Total nominal identificado: ${typeof money==='function'?money(installment.total):installment.total}.`,
+        `Parcela individual: ${typeof money==='function'?money(installment.installmentValue):installment.installmentValue} em ${installment.installments} pagamentos.`,
+        'Trate prazo como moeda de negociação: compare o equivalente à vista com seu alvo e com outras alternativas.'
+      ];
+      a.questions=[
+        'Essas parcelas vencem em 30, 60 e 90 dias ou existe outro calendário?',
+        'Qual é o melhor valor total se eu reduzir o prazo de pagamento?',
+        'Se mantivermos esse parcelamento, há alguma melhoria adicional no valor total?'
+      ];
+      a.concession='Não negocie a parcela isoladamente. Qualquer mudança no prazo deve ser trocada por melhoria no valor total ou em outra condição relevante.';
+      a.dont='Não interprete o valor de uma parcela como preço total da proposta.';
+      a.response=`“Entendi: são ${installment.installments} parcelas iguais de ${typeof money==='function'?money(installment.installmentValue):installment.installmentValue}, totalizando ${typeof money==='function'?money(installment.total):installment.total}. Só preciso confirmar os vencimentos. Se eu melhorar o prazo de pagamento, qual é sua melhor condição no valor total?”`;
+      a.nextMove=`A proposta econômica é de ${typeof money==='function'?money(installment.total):installment.total} nominais, não ${typeof money==='function'?money(installment.installmentValue):installment.installmentValue}. Confirme o calendário das parcelas e use o equivalente à vista para decidir se precisa mover preço.`;
+    }else if(detected.length&&!a.offer){
       a.offer=detected[detected.length-1];
     }
+
     return contextualize(a,n,text);
   };
 })();
