@@ -4,34 +4,22 @@ plugins {
 
 android {
     namespace 'com.negociaai.app'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId 'com.negociaai.app'
         minSdk 24
-        targetSdk 35
-        versionCode 19
-        versionName '0.9.14-beta19'
-    }
-
-    signingConfigs {
-        betaFixed {
-            storeFile file('../beta-signing/negocia-beta-fixed.jks')
-            storePassword 'NegociaBeta2026'
-            keyAlias 'negocia_beta'
-            keyPassword 'NegociaBeta2026'
-            v1SigningEnabled true
-            v2SigningEnabled true
-        }
+        targetSdk 36
+        versionCode 100
+        versionName '1.0.0-closedtest1'
     }
 
     buildTypes {
         debug {
-            signingConfig signingConfigs.betaFixed
+            // Local/debug builds use the standard Android debug signing key.
         }
         release {
             minifyEnabled false
-            signingConfig signingConfigs.betaFixed
         }
     }
 
