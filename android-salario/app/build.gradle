@@ -8,8 +8,8 @@ android {
         applicationId 'br.com.salarioia.app'
         minSdk 24
         targetSdk 36
-        versionCode 5
-        versionName '1.0.2'
+        versionCode 6
+        versionName '1.0.3'
     }
     buildTypes {
         release {
@@ -26,4 +26,5 @@ android {
 }
 dependencies {
     implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'com.android.billingclient:billing:8.0.0'
 }
