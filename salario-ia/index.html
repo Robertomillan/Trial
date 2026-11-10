@@ -172,6 +172,17 @@
 </style>
 <style id="pjReserveV1">
 .f select{width:100%;padding:13px;border-radius:12px;border:1px solid #29483d;background:#061914;color:#fff;font-size:16px}
+.pjMonthlyPanel{position:relative;z-index:2;margin-top:12px;border:1px solid #32654b;border-radius:20px;padding:17px 14px;background:linear-gradient(145deg,#0d2b1d,#071511)}
+.pjMonthlyPanel h2{font-size:18px;margin:0 0 5px;color:#f1faf2}
+.pjMonthlyIntro{font-size:12px;line-height:1.5;color:#c4d6ca;margin:0 0 13px}
+.pjMonthlyGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.pjMonthlyItem{min-width:0;border:1px solid #315040;border-radius:14px;padding:13px 10px;background:#071b12}
+.pjMonthlyItem.average{border-color:#62b978;background:#10351e}
+.pjMonthlyLabel{display:block;font-size:12px;line-height:1.35;color:#d0e4d4;font-weight:650;min-height:33px}
+.pjMonthlyValue{display:block;font-size:clamp(16px,4.4vw,23px);letter-spacing:-.6px;font-weight:900;color:#f4faf4;margin-top:7px;overflow-wrap:anywhere}
+.pjMonthlyItem.average .pjMonthlyValue{color:#a4f59c}
+.pjMonthlyDetail{display:block;color:#b5cbbd;font-size:11px;line-height:1.45;margin-top:7px}
+.pjMonthlyNote{font-size:12px;line-height:1.5;color:#c4d6ca;margin:12px 0 0}
 .reservePanel{margin-top:12px;border:1px solid #315342;border-radius:20px;background:linear-gradient(160deg,#10241b,#07120f);padding:17px 16px}
 .reservePanel h2{font-size:18px;margin:0 0 7px;color:#f2f8f3}
 .reservePanel .reserveSub{font-size:12px;line-height:1.5;color:#b8c4bc;margin:0 0 10px}
@@ -206,6 +217,15 @@
 <div class="metricCard slateM"><div class="metricIcon"><svg viewBox="0 0 32 32"><circle cx="16" cy="9" r="6"/><path d="M5 29c0-7 4-11 11-11s11 4 11 11Z"/></svg></div><div><div class="mk" id="k3"></div><div class="mv" id="v3"></div></div><div class="md" id="d3"></div></div>
 <div class="metricCard goldM"><div class="metricIcon"><svg viewBox="0 0 32 32"><path d="M3 12h26v7H3ZM6 19h20v11H6ZM16 12v18M16 12H9c-4 0-5-6-1-7 4-1 8 7 8 7Zm0 0h7c4 0 5-6 1-7-4-1-8 7-8 7Z"/></svg></div><div><div class="mk" id="k4"></div><div class="mv" id="v4"></div></div><div class="md" id="d4"></div></div>
 </div>
+<section class="pjMonthlyPanel" id="pjMonthlyPanel" aria-label="Comparação da renda PJ mensal">
+<h2>Como ler sua renda PJ</h2>
+<p class="pjMonthlyIntro" id="pjMonthlyIntro">Mês com uma nota versus média de 12 meses.</p>
+<div class="pjMonthlyGrid">
+<div class="pjMonthlyItem"><span class="pjMonthlyLabel">Líquido de um mês regular</span><strong class="pjMonthlyValue" id="pjMonthlyRegular"></strong><span class="pjMonthlyDetail">Uma nota fiscal, sem o bônus anual.</span></div>
+<div class="pjMonthlyItem average"><span class="pjMonthlyLabel">Média líquida mensal anualizada</span><strong class="pjMonthlyValue" id="pjMonthlyAverage"></strong><span class="pjMonthlyDetail">Resultado anual dividido por 12 meses.</span></div>
+</div>
+<p class="pjMonthlyNote" id="pjMonthlyNote"></p>
+</section>
 <section class="cltBreakdown" id="cltBreakdown" aria-label="Demonstrativo anual CLT" style="display:none">
 <div class="cltBreakdownHead"><div><span class="cltBreakdownEyebrow">COMPOSIÇÃO DA REMUNERAÇÃO</span><h2 id="cltBreakdownTitle">Seu pacote CLT</h2></div><span class="cltBreakdownTag">Anual</span></div>
 <div class="cltBreakdownRows">
@@ -331,6 +351,12 @@ function pjAnnual(nf,das,pro,ip,c,notes,vr,bonus){var p=pj(nf,das,pro,ip,c);retu
 function plrNet2026(gross){gross=Math.max(0,gross);var rate=gross<=8214.40?0:gross<=9922.28?.075:gross<=13167?.15:gross<=16380.38?.225:.275;var deduct=gross<=8214.40?0:gross<=9922.28?616.08:gross<=13167?1360.25:gross<=16380.38?2347.78:3166.80;return gross-Math.max(0,gross*rate-deduct)}
 function cltBreakdownValues(s,vr,plr,desc,benef){var m=clt(s,desc),thirteenth=clt(s,0).net,vacation=Math.max(0,clt(s*4/3,0).net-clt(s,0).net),plrNet=plrNet2026(s*plr),salaries=m.net*12,benefits=(vr+benef)*12;return{salaries:salaries,thirteenth:thirteenth,vacation:vacation,benefits:benefits,plr:plrNet,total:salaries+thirteenth+vacation+benefits+plrNet,fgts:(s*13+s/3)*.08}}
 function cltAnnual(s,vr,plr,desc,benef){return cltBreakdownValues(s,vr,plr,desc,benef).total}
+function renderPjMonthly(regular,annual,notes,bonus,vr,simulated){
+ $('pjMonthlyIntro').textContent=simulated?'Cenário PJ equivalente estimado: mês com uma nota versus média anual.':'Seu cenário PJ: mês com uma nota versus média anual.';
+ $('pjMonthlyRegular').textContent=money(regular);
+ $('pjMonthlyAverage').textContent=money(annual/12);
+ $('pjMonthlyNote').textContent='O cálculo anual considera '+notes+' '+(notes===1?'nota fiscal':'notas fiscais')+' por ano'+(bonus>0?', bônus PJ de '+money(bonus):'')+(vr>0?', benefícios PJ de '+money(vr)+'/mês':'')+'. A média anual inclui todas essas parcelas e os custos e tributos estimados. A reserva financeira é mostrada separadamente, sem reduzir essa renda.';
+}
 function renderPjReserve(annual,months){var reserve=annual*months/12; $('reserveSub').textContent=months===0?'Nenhum mês de reserva selecionado.':'Reserva de '+months+' '+(months===1?'mês':'meses')+' da renda líquida PJ média anual.';$('reserveAnnual').textContent=money(annual);$('reserveAmount').textContent=money(reserve);$('reserveAvailable').textContent=money(Math.max(0,annual-reserve))}
 function renderCLTBreakdown(info){var v=cltBreakdownValues(info.s,info.vr,info.plr,info.desc,info.benef);$('cltBreakdown').style.display='block';$('cltBreakdownTitle').textContent=info.origin?'Seu pacote CLT':'Pacote CLT equivalente';[['clt12',v.salaries],['clt13',v.thirteenth],['cltVacation',v.vacation],['cltBenefits',v.benefits],['cltPlr',v.plr],['cltTotal',v.total],['cltFgtsValue',v.fgts]].forEach(function(pair){$(pair[0]).textContent=money(pair[1])})}
 function find(t,fn){var lo=0,hi=Math.max(1000,t*2);while(fn(hi)<t&&hi<1e7)hi*=2;for(var k=0;k<70;k++){var m=(lo+hi)/2;if(fn(m)<t)lo=m;else hi=m}return(lo+hi)/2}
@@ -342,7 +368,7 @@ function calcPJ(){
  var das=n('pdas')/100,pro=n('ppro'),ip=PJ_INSS_RATE,other=n('pcus'),cont=n('pcont'),health=n('phealth'),bonus=n('pbonus'),c=other+cont+health,notes=n('pnot'),vr=n('pvr'),benef=n('pcltbenef');
  if(![nf,das,pro,ip,other,cont,health,bonus,notes,vr,benef].every(Number.isFinite)||das<0||das>=1||pro<0||pro>nf||ip<0||ip>1||notes<1||notes>24||[other,cont,health,bonus,vr,benef].some(function(x){return x<0}))return alert('Revise os valores: alíquota, bônus e custos não podem ser negativos, pró-labore não pode superar a nota e notas/ano devem ficar entre 1 e 24.');
  var p=pj(nf,das,pro,ip,c),annual=pjAnnual(nf,das,pro,ip,c,notes,vr,bonus),eq=find(annual,function(s){return cltAnnual(s,0,0,0,benef)});
- renderPjReserve(annual,n('preserve'));lastBase=eq;lastMode='clt';
+ renderPjMonthly(p.net,annual,notes,bonus,vr,false);renderPjReserve(annual,n('preserve'));lastBase=eq;lastMode='clt';
  render('clt',eq,'Salário CLT bruto mensal estimado para equivaler ao pacote líquido anual PJ, incluindo bônus PJ faturado, custos e benefícios informados. FGTS não incluído como dinheiro disponível.',[
  ['Líquido PJ',money(p.net)+'/mês','Mês regular com nota fiscal, sem bônus anual.'],
  ['DAS/ISS',money(p.tax)+'/mês','Alíquota efetiva informada aplicada à nota regular.'],
@@ -357,7 +383,7 @@ function calcCLT(){
  if(![s,vr,plr,desc,das,pro,other,cont,health,bonus,notes,pjVr].every(Number.isFinite)||das<0||das>=1||pro<0||plr<0||notes<1||notes>24||[other,cont,health,bonus,vr,desc,pjVr].some(function(x){return x<0}))return alert('Revise os valores: DAS, PLR, bônus e custos não podem ser negativos e notas/ano devem ficar entre 1 e 24.');
  var cl=clt(s,desc),annual=cltAnnual(s,vr,plr,desc,0),eq=find(annual,function(x){return pjAnnual(x,das,pro,PJ_INSS_RATE,c,notes,pjVr,bonus)});
  if(pro>eq)return alert('O pró-labore informado é superior à nota PJ equivalente. Reduza o pró-labore ou ajuste as premissas.');
- renderPjReserve(pjAnnual(eq,das,pro,PJ_INSS_RATE,c,notes,pjVr,bonus),n('creserve'));lastBase=eq;lastMode='pj';
+ var equivalentPjAnnual=pjAnnual(eq,das,pro,PJ_INSS_RATE,c,notes,pjVr,bonus);renderPjMonthly(pj(eq,das,pro,PJ_INSS_RATE,c).net,equivalentPjAnnual,notes,bonus,pjVr,true);renderPjReserve(equivalentPjAnnual,n('creserve'));lastBase=eq;lastMode='pj';
  render('pj',eq,'Nota fiscal PJ mensal estimada para equivaler ao pacote CLT anual, incluindo 13º, férias, VR e PLR líquida pela tabela específica de 2026. Considera bônus e custos do PJ. FGTS não incluído como dinheiro disponível.',[
  ['Líquido CLT',money(cl.net)+'/mês','Valor mensal líquido após INSS, IRPF e outros descontos CLT.'],
  ['INSS + IRPF',money(cl.i+cl.r)+'/mês','Descontos tributários estimados do emprego CLT.'],
