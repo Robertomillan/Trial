@@ -27,7 +27,9 @@ jobs:
           script = html.split('<script>', 1)[1].split('</script>', 1)[0]
           Path('/tmp/salario-calculator.js').write_text(script)
           assert 'function pjInssAmount(pro)' in script
-          assert 'function openTaxHelp(kind)' in script
+          assert 'function openTaxHelp(kind,target)' in script
+          assert 'function plrNet2026(gross)' in script
+          assert 'function applyDasAssistant()' in script
           assert 'id="pInssAuto"' in html and 'id="cInssAuto"' in html
           PY
           node --check /tmp/salario-calculator.js
