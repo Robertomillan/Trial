@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
     private static final int FREE_LIMIT = 5;
     private static final String PREFS_NAME = "salarioia_entitlements_v1";
     private static final String PREFS_USES = "completed_calculations";
+    private static final String PREFS_PREMIUM = "verified_premium_cached";
     private final Object useLock = new Object();
     private SharedPreferences prefs;
     private BillingClient billingClient;
@@ -56,6 +57,7 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        premiumUnlocked = prefs.getBoolean(PREFS_PREMIUM, false);
         getWindow().setStatusBarColor(Color.rgb(3, 19, 15));
         getWindow().setNavigationBarColor(Color.rgb(3, 19, 15));
 
@@ -145,7 +147,6 @@ public class MainActivity extends Activity {
         @JavascriptInterface public boolean isReady() { return entitlementReady; }
         @JavascriptInterface public boolean tryUseFree() {
             if (premiumUnlocked) return true;
-            if (!entitlementReady) return false;
             synchronized (useLock) {
                 int used = prefs.getInt(PREFS_USES, 0);
                 if (used >= FREE_LIMIT) return false;
@@ -231,6 +232,7 @@ public class MainActivity extends Activity {
                 } else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) pending = true;
             }
             premiumUnlocked = owned;
+            prefs.edit().putBoolean(PREFS_PREMIUM, owned).apply();
             entitlementReady = true;
             billingMessage = owned ? "Premium vitalício ativo." :
                 pending ? "Pagamento pendente. O acesso será liberado após confirmação." :
@@ -243,6 +245,7 @@ public class MainActivity extends Activity {
         if (!purchase.getProducts().contains(PRODUCT_ID)
             || purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED) return;
         premiumUnlocked = true;
+        prefs.edit().putBoolean(PREFS_PREMIUM, true).apply();
         if (!purchase.isAcknowledged() && billingClient != null && billingClient.isReady()) {
             AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
                 .setPurchaseToken(purchase.getPurchaseToken()).build();
