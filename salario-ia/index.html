@@ -337,10 +337,6 @@ function salarioBillingUpdate(remaining,premium,ready,price,message){
 function permitConsultation(){
  if(!androidBilling())return true;
  if(window.SalarioBilling.isPremium())return true;
- if(!window.SalarioBilling.isReady()){
-  showBillingPaywall('Aguarde a validação com o Google Play ou toque em Restaurar.');
-  return false;
- }
  if(!window.SalarioBilling.tryUseFree()){
   currentFreePremiumAccess=false;
   showBillingPaywall('As 5 consultas gratuitas foram utilizadas. Desbloqueie o Premium para continuar.');
