@@ -6,8 +6,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Looper;
 import org.json.JSONObject;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
@@ -102,6 +100,7 @@ public class MainActivity extends Activity {
                         + "if(b){var old=b.textContent;b.textContent='Texto copiado ✓';"
                         + "setTimeout(function(){b.textContent=old},1600)}};", null);
                 }
+                notifyWeb();
             }
         });
         setContentView(webView);
@@ -327,7 +326,9 @@ public class MainActivity extends Activity {
     @Override public void onBackPressed() {
         if (webView == null) { super.onBackPressed(); return; }
         webView.evaluateJavascript(
-            "(function(){var active=document.querySelector('.screen.on');"
+            "(function(){var paywall=document.getElementById('billingPaywall');"
+            + "if(paywall&&paywall.classList.contains('open')){closeBillingPaywall();return 'handled';}"
+            + "var active=document.querySelector('.screen.on');"
             + "if(!active||active.id==='home')return 'exit';"
             + "if(active.id==='premiumScreen')show(lastScreen||'result');"
             + "else if(active.id==='result')show('form');else show('home');"
