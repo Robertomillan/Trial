@@ -2,7 +2,7 @@ name: Build SalarioIA Android Beta
 
 on:
   push:
-    branches: [negocia-ai-render]
+    branches: [negocia-ai-render, salario-ia-premium-beta]
     paths:
       - 'android-salario/**'
       - 'salario-ia/index.html'
@@ -31,6 +31,9 @@ jobs:
           assert 'function plrNet2026(gross)' in script
           assert 'function applyDasAssistant()' in script
           assert 'id="pInssAuto"' in html and 'id="cInssAuto"' in html
+          if 'salario-ia-premium-beta' in __import__('os').environ.get('GITHUB_REF', ''):
+              assert 'function permitConsultation()' in script
+              assert 'id="billingPaywall"' in html
           PY
           node --check /tmp/salario-calculator.js
       - uses: actions/setup-java@v4
@@ -91,7 +94,8 @@ jobs:
           printf '%s' "$SALARIOIA_KEYSTORE_BASE64" | base64 --decode > /tmp/salarioia-upload.jks
           (cd android-salario && gradle --no-daemon --stacktrace :app:bundleRelease)
           INPUT="android-salario/app/build/outputs/bundle/release/app-release.aab"
-          OUTPUT="android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.3.aab"
+          VERSION_NAME=$(awk -F "'" '/versionName/ {print $2; exit}' android-salario/app/build.gradle)
+          OUTPUT="android-salario/app/build/outputs/bundle/release/SalarioIA-Play-${VERSION_NAME}.aab"
           jarsigner -keystore /tmp/salarioia-upload.jks \
             -storepass:env SALARIOIA_KEYSTORE_PASSWORD \
             -keypass:env SALARIOIA_KEYSTORE_PASSWORD \
@@ -105,6 +109,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SalarioIA-Play-AAB-assinado
-          path: android-salario/app/build/outputs/bundle/release/SalarioIA-Play-1.0.3.aab
+          path: android-salario/app/build/outputs/bundle/release/SalarioIA-Play-*.aab
           if-no-files-found: error
           retention-days: 30
